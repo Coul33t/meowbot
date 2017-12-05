@@ -33,13 +33,19 @@ function import_stopwords(file) {
 function extract_keywords(sentence) {
     import_stopwords('stopwords.txt');
     sentence_array = sentence.toLowerCase();
+
     sentence_array = sentence_array.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
     console.log('after replace: ' + sentence_array);
+
     var separators = [' ', '\\\''];
     sentence_array = sentence_array.split(new RegExp(separators.join('|'), 'g'));
     console.log('after split: ' + sentence_array);
 
     for (word of global.stop_words) {
+        console.log('type of word: ' + typeof(word) + ' (' + word + ')');
+        console.log('type of sentence array: ' + typeof(sentence_array[1]) + ' (' + sentence_array[1] + ')');
+        console.log(word.toString() === sentence_array[1].toString());
+        console.log(sentence_array.indexOf(word));
         if (sentence_array.indexOf(word) !== -1) {
             sentence_array.splice(sentence_array.indexOf(word), 1);
         }
