@@ -1,4 +1,4 @@
-a
+﻿a
 à
 de
 du
@@ -17,3 +17,6 @@ nous
 vous
 ils
 elles
+y
+s
+si
