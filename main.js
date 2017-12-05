@@ -24,7 +24,8 @@ var keywords = []
 // Use to have verbose output on the JS console
 var DEBUG = false;
 
-
+// Used to import the stopwords from a txt file
+// TODO: avoid async
 function import_stopwords(file) {
     
     var r_data = [];
@@ -40,6 +41,9 @@ function import_stopwords(file) {
     });
 }
 
+// Used to import the keywords (and words associated with each keywords)
+// from a text file
+// TODO: avoid async
 function import_keywords_matching(file) {
     
     var r_data = [];
@@ -85,6 +89,8 @@ function import_keywords_matching(file) {
     });
 }
 
+// This function eliminates all the unwanted words in the sentence
+// (every word that doesn't carry useful semantic)
 function extract_keywords(sentence) {
     import_stopwords('stopwords.txt');
 
@@ -97,18 +103,17 @@ function extract_keywords(sentence) {
     if (DEBUG)
         console.log('after replace: ' + sentence_array);
 
-    // We also separate words with a ', such as in " J'aime "
+    // We also separate words with a ', such as in " J'aime " -> "J", "aime"
     var separators = [' ', '\\\''];
     sentence_array = sentence_array.split(new RegExp(separators.join('|'), 'g'));
 
     if (DEBUG)
         console.log('after split: ' + sentence_array);
 
-    // We get the indexes of stop-words
+    // Used to store the indexes of stop-words
     idx_to_splice = [];
 
-
-
+    // Getting the indexes of stop-words
     for (word of global.stop_words) {
         // Yo this .trim() fucker is what I needed
         if (sentence_array.indexOf(word.trim()) !== -1) {
@@ -119,8 +124,8 @@ function extract_keywords(sentence) {
     if (DEBUG)
         console.log("idx to splice: " + idx_to_splice);
 
-    // NOTE: Because JS is fucking bullshit, it orders by 
-    // default alphabetically, so we have to define a 
+    // NOTE: Because JS is fucking bullshit, its default 
+    // sorting is alphabetically, so we have to define a 
     // " true " number sorting function. *sighs*
 
     // We sort them in descending order, because we can then
@@ -131,7 +136,7 @@ function extract_keywords(sentence) {
     if (DEBUG)
         console.log("idx to splice after sorting: " + idx_to_splice);
 
-    // We delete the stop words
+    // We delete the stop words (from the end to the beginning)
     for (idx of idx_to_splice) {
         sentence_array.splice(idx, 1);
     }
@@ -139,10 +144,11 @@ function extract_keywords(sentence) {
     if (DEBUG)
         console.log('after custom filter: ' + sentence_array);
 
+    // We now have the sementically important words
     global.keywords = sentence_array;
 }
 
-// WIP
+// Returns the query semantics, from the reduced sentence.
 function get_principal_interest(keywords) {
     import_keywords_matching('keywords_matching.txt');
     
@@ -156,38 +162,41 @@ function get_principal_interest(keywords) {
         // For each word associated to a KEYWORD
         for (i of Object.keys(global.keywords_matching[key])) {
             // ???? It works...
-            //console.log(global.keywords_matching[key][match_word]);
             if (global.keywords.indexOf(global.keywords_matching[key][i]) !== -1) {
+                // Add 1 to the KEYWORD if there's at least one occurence of a word
                 matching_res[key] += 1;
             }
         }
     }
 
+    // Preparing the output
     var output = '';
 
-    console.log(matching_res);
-
+    // For each KEYWORD
     for (var key of Object.keys(matching_res)){
+        // If there's at least 1 word associated with a KEYWORD,
+        // put it in the output
         if (matching_res[key] > 0) {
             output += key.toLowerCase() + '(' + matching_res[key] + ')<br />';  
         }
     }
 
+    // If there's no KEYWORD extracted from the initial sentence
     if (output === '')
         document.getElementById("pre_res").innerHTML = 'Rien de connu de nos chatrvices. (=｀ω´=)';
     else
         document.getElementById("pre_res").innerHTML = 'J\'ai la réponse ! (=^-ω-^=)<br /><br />Votre demande concerne :';
 
     document.getElementById("res").innerHTML = output;
-    
-    //console.log(matching_res);
 }
 
+// Main function, processing the sentence
 function processing(sentence) {
     extract_keywords(sentence);
     get_principal_interest();
 }
 
+// jQuery button call
 $(document).ready(function() {
     $('#sentence_button').click(function() {
         processing($('#form_sentence_value').val());
