@@ -4,7 +4,28 @@
 // " ce " -> " ce soir " -> today
 // " hier " -> " hier soir " -> tomorrow
 
+// example:
+// " J'aimerai savoir si il y a quelque-chose de prévu ce soir "
+// savoir                   => pull from database
+// prévu -> quelque-chose   => any event
+// soir -> ce               => this evening
 
+// " Je voudrais organiser un barbecue le lundi 13 janvier "
+// organiser                => put into database
+// barbecue                 => an event (barbecue)
+// lundi -> 13 -> janvier   => Monday 13th january (since there's no year, we put the next 13th January)
+
+// What do we need to extract from the sentence:
+//      - The intention (get information or create an event)
+//      - The event (can be " anything ")
+//      - The date (can be " anytime " if it's a " get information ", has to be present if it's an " event creation ") 
+
+// Tricky things:
+//      - date parsing
+//      - multiple requests in one sentence
+
+// Maybe another array for verbs ?
+// Maybe another array for events ?
 
 var global = this;
 // This array contains the stop-words, i.e. words that are
