@@ -1,3 +1,5 @@
+- You can add comments in this file
+- to do so, add a - at the beginning of the line
 #DATE
 quand
 seconde
@@ -13,6 +15,7 @@ journées
 semaine
 semaines
 mois
+- In the middle of nowhere
 an
 ans
 année
@@ -27,3 +30,4 @@ hier
 #LIEU
 où
 quelquepart
+au

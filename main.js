@@ -27,7 +27,9 @@
 // Maybe another array for verbs ?
 // Maybe another array for events ?
 
+// Bullshit workaround for global access
 var global = this;
+
 // This array contains the stop-words, i.e. words that are
 // useless to understand the request (see stopwords.txt)
 var stop_words = [];
@@ -48,8 +50,6 @@ var DEBUG = false;
 // Used to import the stopwords from a txt file
 // TODO: avoid async
 function import_stopwords(file) {
-    
-    var r_data = [];
 
     jQuery.ajax({  
         url: file,
@@ -57,7 +57,19 @@ function import_stopwords(file) {
         cache: false,
         dataType: 'text',
         success:  function(data) {
-            global.stop_words = data.split("\n");
+
+            global.stop_words = [];
+
+            file_contents = data.split("\n");
+
+            for (line of file_contents) {
+                if (line.indexOf('-') !== 0)
+                    global.stop_words.push(line);
+                else
+                    if (DEBUG)
+                        console.log("Comment from stopwords.txt: " + line.substring(1).trim());
+            }
+                
         },
     });
 }
@@ -66,8 +78,6 @@ function import_stopwords(file) {
 // from a text file
 // TODO: avoid async
 function import_keywords_matching(file) {
-    
-    var r_data = [];
 
     jQuery.ajax({  
         url: file,
@@ -81,24 +91,32 @@ function import_keywords_matching(file) {
             new_key = 'BEGIN';
             
             for (line of file_contents) {
-                // If there's a #, it's a new entry
-                if (line.indexOf('#') === 0) {
+                // Lines starting with '-' are comments, so we ignore them
+                if (line.indexOf('-') !== 0) {
+                    // If there's a #, it's a new entry
+                    if (line.indexOf('#') === 0) {
 
-                    // EXCEPT IF it was the beginning of the file
-                    if (new_key !== 'BEGIN') {
-                        global.keywords_matching[new_key] = keywords_to_match;
+                        // EXCEPT IF it was the beginning of the file
+                        if (new_key !== 'BEGIN') {
+                            global.keywords_matching[new_key] = keywords_to_match;
+                        }
+
+                        // We reset the array of words and save the name
+                        // of the global matching (unclear?)
+                        keywords_to_match = []
+                        new_key = line.substr(1);
+                        
+                    } 
+
+                    // Else, it's a word to add to the entry
+                    else {
+                        keywords_to_match.push(line.trim());
                     }
+                }
 
-                    // We reset the array of words and save the name
-                    // of the global matching (unclear?)
-                    keywords_to_match = []
-                    new_key = line.substr(1);
-                    
-                } 
-
-                // Else, it's a word to add to the entry
                 else {
-                    keywords_to_match.push(line.trim());
+                    if (DEBUG)
+                        console.log("Comment from keywords_matching.txt: " + line.substring(1).trim());
                 }
 
             }
@@ -192,7 +210,7 @@ function get_principal_interest(keywords) {
 
     // Preparing the output
     var output = '';
-
+    
     // For each KEYWORD
     for (var key of Object.keys(matching_res)){
         // If there's at least 1 word associated with a KEYWORD,
